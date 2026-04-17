@@ -155,7 +155,13 @@
 
         async function fetchData() {
             try {
-                const response = await fetch('/api/fleet');
+                // Try absolute URL first
+                let response = await fetch('/.netlify/functions/api/fleet');
+                if (!response.ok) {
+                    // Try the redirected path
+                    response = await fetch('/api/fleet');
+                }
+                
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.length > 0) {
@@ -182,16 +188,16 @@
             status.classList.add('text-slate-500');
 
             try {
-                // Try both possible endpoints for better compatibility
-                let response = await fetch('/api/webhook', {
+                // Try the most direct absolute path first to avoid redirect issues
+                let response = await fetch('/.netlify/functions/api/webhook', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ Body: message, From: 'whatsapp:+910000000000' })
                 });
                 
-                // If /api/webhook fails, try the absolute Netlify function path
+                // If that fails, try the redirected path
                 if (!response.ok) {
-                    const fallbackResponse = await fetch('/.netlify/functions/api/webhook', {
+                    const fallbackResponse = await fetch('/api/webhook', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ Body: message, From: 'whatsapp:+910000000000' })
