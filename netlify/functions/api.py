@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Standard Flask app
 app = Flask(__name__)
 CORS(app)
 
@@ -18,6 +19,8 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 
 def get_supabase() -> Client:
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        raise ValueError("Missing Supabase URL or Key environment variables")
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # Fallback data if database is empty
@@ -45,15 +48,15 @@ INITIAL_FLEET = [
     }
 ]
 
+# Support for multiple path variations for the same route
 @app.route('/api/fleet', methods=['GET'])
+@app.route('/.netlify/functions/api/fleet', methods=['GET'])
 def get_fleet():
     try:
         supabase = get_supabase()
-        # Fetch trips from Supabase
         response = supabase.table('trips').select("*").order('date', desc=True).execute()
-        all_trips = response.data
+        all_trips = response.data or []
 
-        # Combine fallback fleet with their respective trips
         fleet = []
         for truck in INITIAL_FLEET:
             truck_copy = truck.copy()
@@ -63,10 +66,10 @@ def get_fleet():
         return jsonify(fleet)
     except Exception as e:
         print(f"Supabase Error: {e}")
-        # Return initial fleet with empty trips if DB fails
         return jsonify([dict(t, trips=[]) for t in INITIAL_FLEET])
 
 @app.route('/api/webhook', methods=['POST'])
+@app.route('/.netlify/functions/api/webhook', methods=['POST'])
 def whatsapp_webhook():
     if request.is_json:
         data = request.json
@@ -85,7 +88,6 @@ def whatsapp_webhook():
     trip_info = match.groupdict()
     vehicle_no = trip_info['truck'].upper()
     
-    # Check if truck exists in our initial fleet
     if not any(t['vehicleNo'] == vehicle_no for t in INITIAL_FLEET):
         return jsonify({"status": "error", "message": f"Truck {vehicle_no} not found"}), 404
 
