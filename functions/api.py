@@ -10,19 +10,56 @@ app = Flask(__name__)
 CORS(app)
 
 # Determine the path to data.json relative to this file
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_FILE = os.path.join(BASE_DIR, '..', 'data.json')
+# On Netlify Functions, the files are typically in the root of the function's deployment
+DATA_FILE_LOCAL = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data.json')
+DATA_FILE_NETLIFY = os.path.join(os.getcwd(), 'data.json')
 
 def load_data():
-    if not os.path.exists(DATA_FILE):
-        print(f"Data file not found at {DATA_FILE}")
-        return []
-    try:
-        with open(DATA_FILE, 'r') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"Error loading data: {e}")
-        return []
+    # Try multiple common locations for Netlify
+    paths_to_try = [
+        DATA_FILE_LOCAL,
+        DATA_FILE_NETLIFY,
+        'data.json',
+        '/var/task/data.json'
+    ]
+    
+    for path in paths_to_try:
+        if os.path.exists(path):
+            print(f"Found data file at: {path}")
+            try:
+                with open(path, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Error reading {path}: {e}")
+    
+    print(f"Data file not found in any of: {paths_to_try}")
+    # Fallback to hardcoded initial data if file is missing
+    return [
+        {
+            "id": 1,
+            "vehicleNo": "RJ-14-GB-1234",
+            "type": "12 Wheeler Truck",
+            "driver": {"name": "Rajesh Kumar", "number": "+91 98765 43210", "age": 42},
+            "maintenance": {"lastDate": "2024-03-15", "issue": "Oil Change", "cost": 15000, "tires": []},
+            "trips": []
+        },
+        {
+            "id": 2,
+            "vehicleNo": "RJ-14-GB-5678",
+            "type": "12 Wheeler Truck",
+            "driver": {"name": "Suresh Singh", "number": "+91 91234 56789", "age": 38},
+            "maintenance": {"lastDate": "2024-02-20", "issue": "Repair", "cost": 22000, "tires": []},
+            "trips": []
+        },
+        {
+            "id": 3,
+            "vehicleNo": "RJ-14-GB-9012",
+            "type": "12 Wheeler Truck",
+            "driver": {"name": "Amit Sharma", "number": "+91 88776 65544", "age": 45},
+            "maintenance": {"lastDate": "2024-04-01", "issue": "Service", "cost": 8000, "tires": []},
+            "trips": []
+        }
+    ]
 
 def save_data(data):
     # This won't actually persist on Netlify Functions
