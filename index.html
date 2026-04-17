@@ -124,13 +124,44 @@
     </main>
 
     <script>
-        let fleetData = [];
+        // Fallback data to show immediately while API loads
+        let fleetData = [
+            {
+                id: 1,
+                vehicleNo: "RJ-14-GB-1234",
+                type: "12 Wheeler Truck",
+                driver: { name: "Rajesh Kumar", number: "+91 98765 43210", age: 42 },
+                maintenance: { lastDate: "2024-03-15", issue: "Engine Oil Change", cost: 15000, tires: [] },
+                trips: []
+            },
+            {
+                id: 2,
+                vehicleNo: "RJ-14-GB-5678",
+                type: "12 Wheeler Truck",
+                driver: { name: "Suresh Singh", number: "+91 91234 56789", age: 38 },
+                maintenance: { lastDate: "2024-02-20", issue: "Clutch Repair", cost: 22000, tires: [] },
+                trips: []
+            },
+            {
+                id: 3,
+                vehicleNo: "RJ-14-GB-9012",
+                type: "12 Wheeler Truck",
+                driver: { name: "Amit Sharma", number: "+91 88776 65544", age: 45 },
+                maintenance: { lastDate: "2024-04-01", issue: "Routine Service", cost: 8000, tires: [] },
+                trips: []
+            }
+        ];
         let currentVehicle = null;
 
         async function fetchData() {
             try {
                 const response = await fetch('/api/fleet');
-                fleetData = await response.json();
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        fleetData = data;
+                    }
+                }
                 if (currentVehicle) {
                     currentVehicle = fleetData.find(v => v.id === currentVehicle.id);
                 }
@@ -138,6 +169,7 @@
                 if (currentVehicle) renderVehicleDetail();
             } catch (err) {
                 console.error("Error fetching data:", err);
+                renderFleetList(); // Still render fallback if API fails
             }
         }
 
@@ -637,7 +669,8 @@
 
         // Initialize
         window.onload = () => {
-            fetchData();
+            renderFleetList(); // Show fallback immediately
+            fetchData(); // Then fetch fresh data from API
             showView('fleet-selection');
         };
     </script>
