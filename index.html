@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fleet Manager - Truck Business</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-indigo-700 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="showView('fleet-selection')">
+                    <i data-lucide="truck" class="w-8 h-8"></i>
+                    <span class="text-xl font-bold tracking-tight">FleetPro Manager</span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <button onclick="showView('fleet-selection')" class="text-sm font-semibold hover:text-indigo-200 transition-colors">Fleet</button>
+                    <button onclick="showView('analytics')" class="text-sm font-semibold hover:text-indigo-200 transition-colors">Business Analytics</button>
+                    <button class="p-2 rounded-full hover:bg-indigo-600 transition-colors">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                    </button>
+                    <div class="h-8 w-8 rounded-full bg-indigo-500 flex items-center justify-center font-semibold">AS</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- WhatsApp Simulator (For Demo) -->
+        <div class="mb-8 glass-card rounded-2xl p-4 border-l-4 border-green-500 bg-green-50/50">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-green-500 p-2 rounded-lg text-white">
+                        <i data-lucide="message-square" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800">WhatsApp Driver Input (Simulator)</h3>
+                        <p class="text-xs text-slate-500">How the driver would send data via WhatsApp</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <input type="text" id="wa-message" value="Truck: RJ-14-GB-1234, From: Jaipur, To: Delhi, Rev: 18000, Fuel: 5000, Salary: 2000, Cuts: 500, Tolls: 1000, Bribe: 200, Repair: 0, Misc: 300" 
+                           class="text-sm border border-slate-200 rounded-lg px-3 py-2 w-[500px] outline-none focus:border-green-500">
+                    <button onclick="simulateWhatsAppMessage()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors">
+                        Send Message
+                    </button>
+                </div>
+            </div>
+            <div id="wa-status" class="mt-2 text-xs font-medium hidden"></div>
+        </div>
+
+        <!-- Analytics View -->
+        <div id="analytics-view" class="view hidden animate-fade-in">
+            <div class="mb-8 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-slate-800">Business Performance</h1>
+                    <p class="text-slate-500 mt-2">Aggregate insights across your entire fleet</p>
+                </div>
+                <div class="flex bg-slate-200 p-1 rounded-xl">
+                    <button onclick="updateAnalytics('weekly')" id="btn-weekly" class="px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-indigo-600">Weekly</button>
+                    <button onclick="updateAnalytics('monthly')" id="btn-monthly" class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-600 hover:text-indigo-600">Monthly</button>
+                    <button onclick="updateAnalytics('yearly')" id="btn-yearly" class="px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-600 hover:text-indigo-600">Yearly</button>
+                </div>
+            </div>
+
+            <div id="analytics-content">
+                <!-- Analytics cards will be injected here -->
+            </div>
+        </div>
+
+        <!-- Fleet Selection View -->
+        <div id="fleet-selection-view" class="view hidden">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-slate-800">Your Fleet</h1>
+                <p class="text-slate-500 mt-2">Select a vehicle to view details and trip history</p>
+            </div>
+            <div id="fleet-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Fleet cards will be injected here -->
+            </div>
+        </div>
+
+        <!-- Vehicle Detail View -->
+        <div id="vehicle-detail-view" class="view hidden animate-fade-in">
+            <button onclick="showView('fleet-selection')" class="flex items-center text-indigo-600 hover:text-indigo-800 mb-6 transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                Back to Fleet
+            </button>
+            
+            <div id="vehicle-content">
+                <!-- Vehicle details will be injected here -->
+            </div>
+        </div>
+
+        <!-- Trip Detail View -->
+        <div id="trip-detail-view" class="view hidden animate-fade-in">
+            <button id="back-to-vehicle" class="flex items-center text-indigo-600 hover:text-indigo-800 mb-6 transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+                Back to Vehicle
+            </button>
+            
+            <div id="trip-content">
+                <!-- Trip details will be injected here -->
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let fleetData = [];
+        let currentVehicle = null;
+
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/fleet');
+                fleetData = await response.json();
+                if (currentVehicle) {
+                    currentVehicle = fleetData.find(v => v.id === currentVehicle.id);
+                }
+                renderFleetList();
+                if (currentVehicle) renderVehicleDetail();
+            } catch (err) {
+                console.error("Error fetching data:", err);
+            }
+        }
+
+        async function simulateWhatsAppMessage() {
+            const message = document.getElementById('wa-message').value;
+            const status = document.getElementById('wa-status');
+            
+            status.textContent = "Sending message...";
+            status.classList.remove('hidden', 'text-green-600', 'text-red-600');
+            status.classList.add('text-slate-500');
+
+            try {
+                const response = await fetch('/api/webhook', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ Body: message, From: 'whatsapp:+910000000000' })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    status.textContent = "✓ " + result.message;
+                    status.classList.replace('text-slate-500', 'text-green-600');
+                    await fetchData(); // Refresh data
+                } else {
+                    status.textContent = "✕ " + result.message;
+                    status.classList.replace('text-slate-500', 'text-red-600');
+                }
+            } catch (err) {
+                status.textContent = "✕ Connection Error";
+                status.classList.replace('text-slate-500', 'text-red-600');
+            }
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById(`${viewId}-view`).classList.remove('hidden');
+            
+            if (viewId === 'fleet-selection') {
+                renderFleetList();
+            } else if (viewId === 'analytics') {
+                updateAnalytics('weekly');
+            }
+            lucide.createIcons();
+        }
+
+        function updateAnalytics(timeframe) {
+            // Update UI buttons
+            ['weekly', 'monthly', 'yearly'].forEach(tf => {
+                const btn = document.getElementById(`btn-${tf}`);
+                if (tf === timeframe) {
+                    btn.className = 'px-4 py-2 rounded-lg text-sm font-bold transition-all bg-white shadow-sm text-indigo-600';
+                } else {
+                    btn.className = 'px-4 py-2 rounded-lg text-sm font-bold transition-all text-slate-600 hover:text-indigo-600';
+                }
+            });
+
+            const now = new Date();
+            let startDate = new Date();
+            
+            if (timeframe === 'weekly') {
+                startDate.setDate(now.getDate() - 7);
+            } else if (timeframe === 'monthly') {
+                startDate.setMonth(now.getMonth() - 1);
+            } else if (timeframe === 'yearly') {
+                startDate.setFullYear(now.getFullYear() - 1);
+            }
+
+            const allTrips = fleetData.flatMap(truck => truck.trips);
+            const filteredTrips = allTrips.filter(trip => new Date(trip.date) >= startDate);
+
+            const totals = filteredTrips.reduce((acc, trip) => {
+                acc.revenue += trip.revenue;
+                acc.cost += trip.cost;
+                acc.profit += trip.profit;
+                acc.fuel += (trip.costBreakdown?.fuel || 0);
+                acc.bribe += (trip.costBreakdown?.bribe || 0);
+                acc.tolls += (trip.costBreakdown?.tolls || 0);
+                acc.salary += (trip.costBreakdown?.salary || 0);
+                return acc;
+            }, { revenue: 0, cost: 0, profit: 0, fuel: 0, bribe: 0, tolls: 0, salary: 0 });
+
+            const content = document.getElementById('analytics-content');
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                    <div class="glass-card rounded-2xl p-8 shadow-sm border-t-4 border-indigo-500">
+                        <div class="flex items-center text-slate-400 mb-2 uppercase text-xs font-bold tracking-widest">
+                            <i data-lucide="trending-up" class="w-4 h-4 mr-2"></i> Total Revenue
+                        </div>
+                        <h2 class="text-4xl font-extrabold text-slate-800">₹${totals.revenue.toLocaleString()}</h2>
+                    </div>
+                    <div class="glass-card rounded-2xl p-8 shadow-sm border-t-4 border-rose-500">
+                        <div class="flex items-center text-slate-400 mb-2 uppercase text-xs font-bold tracking-widest">
+                            <i data-lucide="minus-circle" class="w-4 h-4 mr-2"></i> Total Expenditure
+                        </div>
+                        <h2 class="text-4xl font-extrabold text-slate-800">₹${totals.cost.toLocaleString()}</h2>
+                    </div>
+                    <div class="glass-card rounded-2xl p-8 shadow-sm border-t-4 border-emerald-500">
+                        <div class="flex items-center text-slate-400 mb-2 uppercase text-xs font-bold tracking-widest">
+                            <i data-lucide="smile" class="w-4 h-4 mr-2"></i> Net Profit
+                        </div>
+                        <h2 class="text-4xl font-extrabold text-emerald-600">₹${totals.profit.toLocaleString()}</h2>
+                    </div>
+                </div>
+
+                <!-- Detailed Expenditure Analytics -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="glass-card rounded-xl p-4 shadow-sm bg-white border border-slate-100">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Total Fuel</p>
+                        <p class="text-lg font-bold text-slate-700">₹${totals.fuel.toLocaleString()}</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 shadow-sm bg-white border border-slate-100">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Total Tolls</p>
+                        <p class="text-lg font-bold text-slate-700">₹${totals.tolls.toLocaleString()}</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 shadow-sm bg-white border border-slate-100">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Total Bribes</p>
+                        <p class="text-lg font-bold text-rose-500">₹${totals.bribe.toLocaleString()}</p>
+                    </div>
+                    <div class="glass-card rounded-xl p-4 shadow-sm bg-white border border-slate-100">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Total Salaries</p>
+                        <p class="text-lg font-bold text-slate-700">₹${totals.salary.toLocaleString()}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-card rounded-2xl p-8 shadow-sm">
+                        <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                            <i data-lucide="truck" class="w-6 h-6 mr-3 text-indigo-600"></i>
+                            Performance by Truck
+                        </h3>
+                        <div class="space-y-6">
+                            ${fleetData.map(truck => {
+                                const truckTrips = truck.trips.filter(trip => new Date(trip.date) >= startDate);
+                                const truckProfit = truckTrips.reduce((sum, t) => sum + t.profit, 0);
+                                const truckRev = truckTrips.reduce((sum, t) => sum + t.revenue, 0);
+                                const percent = totals.revenue > 0 ? (truckRev / totals.revenue) * 100 : 0;
+                                
+                                return `
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="font-bold text-slate-700">${truck.vehicleNo}</span>
+                                            <span class="font-bold text-emerald-600">₹${truckProfit.toLocaleString()} Profit</span>
+                                        </div>
+                                        <div class="w-full bg-slate-100 rounded-full h-2">
+                                            <div class="bg-indigo-500 h-2 rounded-full transition-all duration-500" style="width: ${percent}%"></div>
+                                        </div>
+                                        <div class="flex justify-between text-[10px] text-slate-400 mt-1 uppercase">
+                                            <span>Revenue Contribution</span>
+                                            <span>${percent.toFixed(1)}%</span>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-8 shadow-sm bg-indigo-900 text-white border-none relative overflow-hidden">
+                        <div class="absolute -right-10 -bottom-10 opacity-10">
+                            <i data-lucide="zap" class="w-64 h-64"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-6 flex items-center">
+                            <i data-lucide="zap" class="w-6 h-6 mr-3 text-amber-400"></i>
+                            Operational Efficiency
+                        </h3>
+                        <div class="space-y-8">
+                            <div>
+                                <p class="text-indigo-200 text-sm mb-1 uppercase tracking-wider">Total Fuel Expense</p>
+                                <p class="text-3xl font-bold">₹${totals.fuel.toLocaleString()}</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-indigo-800/50 p-4 rounded-xl">
+                                    <p class="text-indigo-200 text-xs mb-1 uppercase">Avg Profit/Trip</p>
+                                    <p class="text-xl font-bold">₹${filteredTrips.length > 0 ? Math.round(totals.profit / filteredTrips.length).toLocaleString() : 0}</p>
+                                </div>
+                                <div class="bg-indigo-800/50 p-4 rounded-xl">
+                                    <p class="text-indigo-200 text-xs mb-1 uppercase">Total Trips</p>
+                                    <p class="text-xl font-bold">${filteredTrips.length}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function renderFleetList() {
+            const list = document.getElementById('fleet-list');
+            if (!list) return;
+            list.innerHTML = fleetData.map(truck => `
+                <div onclick="selectVehicle(${truck.id})" class="glass-card rounded-2xl p-6 shadow-sm hover:shadow-md transition-all cursor-pointer border-t-4 border-indigo-500 group">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Vehicle No.</span>
+                            <h3 class="text-xl font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">${truck.vehicleNo}</h3>
+                        </div>
+                        <div class="bg-indigo-100 p-2 rounded-lg text-indigo-600">
+                            <i data-lucide="truck" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center text-sm text-slate-600">
+                            <i data-lucide="user" class="w-4 h-4 mr-2"></i>
+                            <span>${truck.driver.name}</span>
+                        </div>
+                        <div class="flex items-center text-sm text-slate-600">
+                            <i data-lucide="calendar" class="w-4 h-4 mr-2"></i>
+                            <span>Last Maint: ${truck.maintenance.lastDate}</span>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center">
+                        <span class="text-xs font-medium text-slate-500">${truck.trips.length} Recent Trips</span>
+                        <span class="text-indigo-600 text-sm font-semibold flex items-center">
+                            View Details <i data-lucide="chevron-right" class="w-4 h-4 ml-1"></i>
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function selectVehicle(id) {
+            currentVehicle = fleetData.find(v => v.id === id);
+            renderVehicleDetail();
+            showView('vehicle-detail');
+        }
+
+        function renderTripRows(trips) {
+            return trips.map(trip => `
+                <tr class="hover:bg-slate-50 transition-colors group">
+                    <td class="py-4 font-medium text-slate-800">${trip.id}</td>
+                    <td class="py-4 text-slate-600">${trip.date}</td>
+                    <td class="py-4">
+                        <div class="flex items-center text-sm">
+                            <span class="font-semibold text-slate-700">${trip.start}</span>
+                            <i data-lucide="arrow-right" class="w-3 h-3 mx-2 text-slate-300"></i>
+                            <span class="font-semibold text-slate-700">${trip.destination}</span>
+                        </div>
+                    </td>
+                    <td class="py-4">
+                        <span class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
+                            ₹${trip.profit.toLocaleString()}
+                        </span>
+                    </td>
+                    <td class="py-4">
+                        <button onclick="viewTrip('${trip.id}')" class="text-indigo-600 hover:text-indigo-800 text-sm font-semibold flex items-center">
+                            Details <i data-lucide="external-link" class="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterTrips() {
+            const start = document.getElementById('start-date').value;
+            const end = document.getElementById('end-date').value;
+            
+            let filtered = currentVehicle.trips;
+            if (start) {
+                filtered = filtered.filter(t => t.date >= start);
+            }
+            if (end) {
+                filtered = filtered.filter(t => t.date <= end);
+            }
+            
+            document.getElementById('trip-table-body').innerHTML = renderTripRows(filtered);
+            lucide.createIcons();
+        }
+
+        function renderVehicleDetail() {
+            const content = document.getElementById('vehicle-content');
+            const truck = currentVehicle;
+            
+            content.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Sidebar: Driver & Info -->
+                    <div class="space-y-6">
+                        <div class="glass-card rounded-2xl p-6 shadow-sm">
+                            <h2 class="text-lg font-bold mb-4 flex items-center">
+                                <i data-lucide="user-circle" class="w-5 h-5 mr-2 text-indigo-600"></i>
+                                Driver Information
+                            </h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Name</p>
+                                    <p class="font-semibold text-slate-800">${truck.driver.name}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Phone Number</p>
+                                    <p class="font-semibold text-slate-800">${truck.driver.number}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Age</p>
+                                    <p class="font-semibold text-slate-800">${truck.driver.age} Years</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="glass-card rounded-2xl p-6 shadow-sm border-l-4 border-amber-500">
+                            <h2 class="text-lg font-bold mb-4 flex items-center">
+                                <i data-lucide="settings" class="w-5 h-5 mr-2 text-amber-500"></i>
+                                Last Maintenance
+                            </h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Date</p>
+                                    <p class="font-semibold text-slate-800">${truck.maintenance.lastDate}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Issue</p>
+                                    <p class="text-sm text-slate-700 font-medium">${truck.maintenance.issue}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-500 uppercase">Cost</p>
+                                    <p class="text-lg font-bold text-slate-900">₹${truck.maintenance.cost.toLocaleString()}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content: Trips & Tires -->
+                    <div class="lg:col-span-2 space-y-8">
+                        <!-- Trip History Section -->
+                        <div class="glass-card rounded-2xl p-6 shadow-sm">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-bold text-slate-800">Trip History</h2>
+                                <div class="flex space-x-2">
+                                    <input type="date" id="start-date" onchange="filterTrips()" class="text-sm border border-slate-200 rounded-lg px-2 py-1 outline-none focus:border-indigo-500">
+                                    <span class="text-slate-400 self-center">to</span>
+                                    <input type="date" id="end-date" onchange="filterTrips()" class="text-sm border border-slate-200 rounded-lg px-2 py-1 outline-none focus:border-indigo-500">
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                                            <th class="pb-3 font-semibold">Trip ID</th>
+                                            <th class="pb-3 font-semibold">Date</th>
+                                            <th class="pb-3 font-semibold">Route</th>
+                                            <th class="pb-3 font-semibold">Profit</th>
+                                            <th class="pb-3 font-semibold">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="trip-table-body" class="divide-y divide-slate-50">
+                                        ${renderTripRows(truck.trips)}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Tire Condition Section -->
+                        <div class="glass-card rounded-2xl p-6 shadow-sm">
+                            <h2 class="text-xl font-bold text-slate-800 mb-6 flex items-center">
+                                <i data-lucide="disc" class="w-6 h-6 mr-2 text-indigo-600"></i>
+                                Tire Conditions (12 Wheeler)
+                            </h2>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                ${truck.maintenance.tires.map((tire, idx) => `
+                                    <div class="text-center p-3 rounded-xl border ${tire.condition === 'Fair' ? 'border-amber-200 bg-amber-50' : 'border-slate-100 bg-slate-50'}">
+                                        <p class="text-[10px] text-slate-400 uppercase mb-1">${tire.position || 'Tire ' + (idx + 1)}</p>
+                                        <div class="flex justify-center mb-1">
+                                            <i data-lucide="circle-dot" class="w-5 h-5 ${tire.condition === 'Excellent' ? 'text-emerald-500' : tire.condition === 'Good' ? 'text-indigo-400' : 'text-amber-500'}"></i>
+                                        </div>
+                                        <p class="text-xs font-bold text-slate-700">${tire.condition}</p>
+                                        <p class="text-[10px] text-slate-500">${tire.threadDepth || 'N/A'}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function viewTrip(tripId) {
+            const trip = currentVehicle.trips.find(t => t.id === tripId);
+            const content = document.getElementById('trip-content');
+            
+            document.getElementById('back-to-vehicle').onclick = () => showView('vehicle-detail');
+
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Summary Cards -->
+                    <div class="glass-card rounded-2xl p-6 shadow-sm bg-gradient-to-br from-indigo-500 to-indigo-600 text-white border-none">
+                        <p class="text-indigo-100 text-sm font-medium mb-1">Total Revenue</p>
+                        <h3 class="text-2xl font-bold">₹${trip.revenue.toLocaleString()}</h3>
+                        <div class="mt-4 flex items-center text-indigo-100 text-xs">
+                            <i data-lucide="trending-up" class="w-4 h-4 mr-1"></i>
+                            <span>12% from last trip</span>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 shadow-sm bg-gradient-to-br from-emerald-500 to-emerald-600 text-white border-none">
+                        <p class="text-emerald-100 text-sm font-medium mb-1">Total Profit</p>
+                        <h3 class="text-2xl font-bold">₹${trip.profit.toLocaleString()}</h3>
+                        <div class="mt-4 flex items-center text-emerald-100 text-xs">
+                            <i data-lucide="smile" class="w-4 h-4 mr-1"></i>
+                            <span>Healthy margin</span>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 shadow-sm bg-gradient-to-br from-rose-500 to-rose-600 text-white border-none">
+                        <p class="text-rose-100 text-sm font-medium mb-1">Total Cost</p>
+                        <h3 class="text-2xl font-bold">₹${trip.cost.toLocaleString()}</h3>
+                        <div class="mt-4 flex items-center text-rose-100 text-xs">
+                            <i data-lucide="alert-circle" class="w-4 h-4 mr-1"></i>
+                            <span>Incl. oil & driver</span>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-2xl p-6 shadow-sm bg-gradient-to-br from-amber-500 to-amber-600 text-white border-none">
+                        <p class="text-amber-100 text-sm font-medium mb-1">Mileage</p>
+                        <h3 class="text-2xl font-bold">${trip.mileage} <span class="text-lg">km/l</span></h3>
+                        <div class="mt-4 flex items-center text-amber-100 text-xs">
+                            <i data-lucide="fuel" class="w-4 h-4 mr-1"></i>
+                            <span>${trip.oilConsumed}L consumed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="glass-card rounded-2xl p-8 shadow-sm">
+                        <h2 class="text-xl font-bold text-slate-800 mb-6">Trip Logistics</h2>
+                        <div class="space-y-6">
+                            <div class="flex items-start">
+                                <div class="bg-indigo-100 p-3 rounded-full text-indigo-600 mr-4">
+                                    <i data-lucide="map-pin" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase font-bold">Route</p>
+                                    <p class="text-lg font-bold text-slate-800">${trip.start} to ${trip.destination}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="bg-blue-100 p-3 rounded-full text-blue-600 mr-4">
+                                    <i data-lucide="navigation" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase font-bold">Total Distance</p>
+                                    <p class="text-lg font-bold text-slate-800">${trip.range} Kilometers</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="bg-amber-100 p-3 rounded-full text-amber-600 mr-4">
+                                    <i data-lucide="clock" class="w-6 h-6"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400 uppercase font-bold">Time Taken</p>
+                                    <p class="text-lg font-bold text-slate-800">${trip.timeTaken}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-card rounded-2xl p-8 shadow-sm relative overflow-hidden">
+                        <div class="absolute top-0 right-0 p-4 opacity-10">
+                            <i data-lucide="pie-chart" class="w-32 h-32"></i>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-800 mb-6">Profit Analysis</h2>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Gross Revenue</span>
+                                <span class="font-bold">₹${trip.revenue.toLocaleString()}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-rose-500">
+                                <span class="">Total Expenses</span>
+                                <span class="font-bold">- ₹${trip.cost.toLocaleString()}</span>
+                            </div>
+                            
+                            <!-- Cost Breakdown -->
+                            <div class="bg-slate-50 p-4 rounded-xl space-y-2 mt-4">
+                                <p class="text-[10px] text-slate-400 uppercase font-bold mb-2">Detailed Expenditure</p>
+                                ${trip.costBreakdown ? Object.entries(trip.costBreakdown).map(([key, val]) => `
+                                    <div class="flex justify-between text-xs text-slate-600">
+                                        <span class="capitalize">${key === 'cuts' ? 'Driver Cuts' : key === 'misc' ? 'Miscellaneous' : key}</span>
+                                        <span class="font-medium">₹${val.toLocaleString()}</span>
+                                    </div>
+                                `).join('') : '<p class="text-xs text-slate-400">No detailed breakdown available</p>'}
+                            </div>
+
+                            <div class="pt-4 border-t border-slate-100 flex justify-between items-center text-xl">
+                                <span class="font-bold text-slate-800">Net Profit</span>
+                                <span class="font-bold text-emerald-600">₹${trip.profit.toLocaleString()}</span>
+                            </div>
+                            <div class="mt-8 bg-slate-50 rounded-xl p-4">
+                                <p class="text-xs text-slate-500 mb-2">Profit Margin</p>
+                                <div class="w-full bg-slate-200 rounded-full h-2">
+                                    <div class="bg-emerald-500 h-2 rounded-full" style="width: ${Math.round((trip.profit/trip.revenue)*100)}%"></div>
+                                </div>
+                                <p class="text-right text-xs font-bold text-emerald-600 mt-1">${Math.round((trip.profit/trip.revenue)*100)}%</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            showView('trip-detail');
+        }
+
+        // Initialize
+        window.onload = () => {
+            fetchData();
+            showView('fleet-selection');
+        };
+    </script>
+</body>
+</html>

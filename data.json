@@ -1,0 +1,159 @@
+[
+  {
+    "id": 1,
+    "vehicleNo": "RJ-14-GB-1234",
+    "type": "12 Wheeler Truck",
+    "driver": {
+      "name": "Rajesh Kumar",
+      "number": "+91 98765 43210",
+      "age": 42
+    },
+    "maintenance": {
+      "lastDate": "2024-03-15",
+      "issue": "Engine Oil Change & Brake Pad Replacement",
+      "cost": 15000,
+      "tires": [
+        {
+          "position": "Front Left",
+          "condition": "Good",
+          "threadDepth": "6mm"
+        },
+        {
+          "position": "Front Right",
+          "condition": "Good",
+          "threadDepth": "6mm"
+        },
+        {
+          "position": "Rear Left 1",
+          "condition": "Fair",
+          "threadDepth": "4mm"
+        },
+        {
+          "position": "Rear Right 1",
+          "condition": "Fair",
+          "threadDepth": "4mm"
+        },
+        {
+          "position": "Rear Left 2",
+          "condition": "New",
+          "threadDepth": "8mm"
+        },
+        {
+          "position": "Rear Right 2",
+          "condition": "New",
+          "threadDepth": "8mm"
+        },
+        {
+          "position": "Rear Left 3",
+          "condition": "Good",
+          "threadDepth": "5mm"
+        },
+        {
+          "position": "Rear Right 3",
+          "condition": "Good",
+          "threadDepth": "5mm"
+        },
+        {
+          "position": "Rear Left 4",
+          "condition": "Fair",
+          "threadDepth": "3mm"
+        },
+        {
+          "position": "Rear Right 4",
+          "condition": "Fair",
+          "threadDepth": "3mm"
+        },
+        {
+          "position": "Spare 1",
+          "condition": "Good",
+          "threadDepth": "7mm"
+        },
+        {
+          "position": "Spare 2",
+          "condition": "Good",
+          "threadDepth": "7mm"
+        }
+      ]
+    },
+    "trips": [
+      {
+        "id": "T2604171342",
+        "date": "2026-04-17",
+        "start": "Jaipur",
+        "destination": "Delhi",
+        "range": 0,
+        "timeTaken": "Unknown",
+        "oilConsumed": 0,
+        "mileage": 0,
+        "revenue": 18000,
+        "cost": 9000,
+        "costBreakdown": {
+          "fuel": 5000,
+          "salary": 2000,
+          "cuts": 500,
+          "tolls": 1000,
+          "bribe": 200,
+          "repair": 0,
+          "misc": 300
+        },
+        "profit": 9000
+      },
+      {
+        "id": "T101",
+        "date": "2024-04-10",
+        "start": "Jaipur",
+        "destination": "Mumbai",
+        "range": 1150,
+        "timeTaken": "28 hours",
+        "oilConsumed": 320,
+        "mileage": 3.59,
+        "revenue": 75000,
+        "cost": 45000,
+        "costBreakdown": {
+          "fuel": 25000,
+          "salary": 5000,
+          "cuts": 2000,
+          "tolls": 4500,
+          "bribe": 1500,
+          "repair": 5000,
+          "misc": 2000
+        },
+        "profit": 30000
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "vehicleNo": "RJ-14-GB-5678",
+    "type": "12 Wheeler Truck",
+    "driver": {
+      "name": "Suresh Singh",
+      "number": "+91 91234 56789",
+      "age": 38
+    },
+    "maintenance": {
+      "lastDate": "2024-02-20",
+      "issue": "Clutch Plate Repair",
+      "cost": 22000,
+      "tires": []
+    },
+    "trips": []
+  },
+  {
+    "id": 3,
+    "vehicleNo": "RJ-14-GB-9012",
+    "type": "12 Wheeler Truck",
+    "driver": {
+      "name": "Amit Sharma",
+      "number": "+91 88776 65544",
+      "age": 45
+    },
+    "maintenance": {
+      "lastDate": "2024-04-01",
+      "issue": "Routine Service",
+      "cost": 8000,
+      "tires": []
+    },
+    "trips": []
+  }
+]
