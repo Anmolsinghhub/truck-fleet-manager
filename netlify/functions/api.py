@@ -62,9 +62,16 @@ def load_data():
     ]
 
 def save_data(data):
-    # This won't actually persist on Netlify Functions
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
+    # On Netlify Functions, we can't save to data.json permanently.
+    # We will try to write it, but it's mainly for local testing.
+    # In production, this will fail or not persist.
+    try:
+        # Check if we have write access to the directory
+        if os.access(os.path.dirname(DATA_FILE_LOCAL), os.W__OK):
+            with open(DATA_FILE_LOCAL, 'w') as f:
+                json.dump(data, f, indent=2)
+    except:
+        pass
 
 @app.route('/api/fleet', methods=['GET'])
 def get_fleet():
