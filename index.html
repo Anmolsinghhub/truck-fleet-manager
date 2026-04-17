@@ -182,11 +182,21 @@
             status.classList.add('text-slate-500');
 
             try {
-                const response = await fetch('/api/webhook', {
+                // Try both possible endpoints for better compatibility
+                let response = await fetch('/api/webhook', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ Body: message, From: 'whatsapp:+910000000000' })
                 });
+                
+                // If /api/webhook fails, try the absolute Netlify function path
+                if (!response.ok) {
+                    response = await fetch('/.netlify/functions/api/webhook', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ Body: message, From: 'whatsapp:+910000000000' })
+                    });
+                }
                 
                 const result = await response.json();
                 
@@ -195,11 +205,12 @@
                     status.classList.replace('text-slate-500', 'text-green-600');
                     await fetchData(); // Refresh data
                 } else {
-                    status.textContent = "✕ " + result.message;
+                    status.textContent = "✕ " + (result.message || "Server Error");
                     status.classList.replace('text-slate-500', 'text-red-600');
                 }
             } catch (err) {
-                status.textContent = "✕ Connection Error";
+                console.error("Simulation Error:", err);
+                status.textContent = "✕ Connection Error: " + err.message;
                 status.classList.replace('text-slate-500', 'text-red-600');
             }
         }
