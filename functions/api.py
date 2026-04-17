@@ -9,15 +9,20 @@ import serverless_wsgi
 app = Flask(__name__)
 CORS(app)
 
-# Note: On Netlify, the file system is read-only.
-# data.json will be read but changes won't persist across requests.
-DATA_FILE = 'data.json'
+# Determine the path to data.json relative to this file
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FILE = os.path.join(BASE_DIR, '..', 'data.json')
 
 def load_data():
     if not os.path.exists(DATA_FILE):
+        print(f"Data file not found at {DATA_FILE}")
         return []
-    with open(DATA_FILE, 'r') as f:
-        return json.load(f)
+    try:
+        with open(DATA_FILE, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading data: {e}")
+        return []
 
 def save_data(data):
     # This won't actually persist on Netlify Functions
