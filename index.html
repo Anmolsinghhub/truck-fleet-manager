@@ -191,21 +191,40 @@
                 
                 // If /api/webhook fails, try the absolute Netlify function path
                 if (!response.ok) {
-                    response = await fetch('/.netlify/functions/api/webhook', {
+                    const fallbackResponse = await fetch('/.netlify/functions/api/webhook', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ Body: message, From: 'whatsapp:+910000000000' })
                     });
+                    response = fallbackResponse;
                 }
                 
-                const result = await response.json();
+                // Get the content type to see if it's JSON or XML
+                const contentType = response.headers.get("content-type");
                 
                 if (response.ok) {
-                    status.textContent = "✓ " + result.message;
+                    let successMessage = "Trip recorded";
+                    if (contentType && contentType.includes("application/json")) {
+                        const result = await response.json();
+                        successMessage = result.message;
+                    } else {
+                        // It's likely XML from Twilio path, just show success
+                        const text = await response.text();
+                        successMessage = "Trip recorded (WhatsApp reply sent)";
+                    }
+                    
+                    status.textContent = "✓ " + successMessage;
                     status.classList.replace('text-slate-500', 'text-green-600');
                     await fetchData(); // Refresh data
                 } else {
-                    status.textContent = "✕ " + (result.message || "Server Error");
+                    let errorMessage = "Server Error";
+                    try {
+                        const errorResult = await response.json();
+                        errorMessage = errorResult.message;
+                    } catch(e) {
+                        errorMessage = `Error ${response.status}: ${response.statusText}`;
+                    }
+                    status.textContent = "✕ " + errorMessage;
                     status.classList.replace('text-slate-500', 'text-red-600');
                 }
             } catch (err) {
