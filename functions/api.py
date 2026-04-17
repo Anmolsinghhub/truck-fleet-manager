@@ -35,19 +35,25 @@ def get_fleet():
 
 @app.route('/api/webhook', methods=['POST'])
 def whatsapp_webhook():
-    data = request.json
+    # Handle both JSON (simulator) and Form Data (Twilio)
+    if request.is_json:
+        data = request.json
+    else:
+        data = request.form
+
     message_body = data.get('Body', '').strip()
     sender = data.get('From', '')
 
     print(f"Received message from {sender}: {message_body}")
 
+    # Regex to parse the detailed message
     pattern = r"Truck:\s*(?P<truck>[\w-]+),\s*From:\s*(?P<from>[\w\s]+),\s*To:\s*(?P<to>[\w\s]+),\s*Rev:\s*(?P<rev>\d+),\s*Fuel:\s*(?P<fuel>\d+),\s*Salary:\s*(?P<salary>\d+),\s*Cuts:\s*(?P<cuts>\d+),\s*Tolls:\s*(?P<tolls>\d+),\s*Bribe:\s*(?P<bribe>\d+),\s*Repair:\s*(?P<repair>\d+),\s*Misc:\s*(?P<misc>\d+)"
     match = re.search(pattern, message_body, re.IGNORECASE)
 
     if not match:
         return jsonify({
             "status": "error", 
-            "message": "Invalid format."
+            "message": "Invalid format. Use the standard Truck: [No], From: [City]... template."
         }), 400
 
     trip_info = match.groupdict()
@@ -87,6 +93,13 @@ def whatsapp_webhook():
 
     truck['trips'].insert(0, new_trip)
     save_data(fleet)
+
+    # If it's from Twilio, we should return a TwiML response (XML)
+    if not request.is_json:
+        return f"""<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+            <Message>✅ Trip recorded for {truck['vehicleNo']}. Total Cost: ₹{total_cost}, Profit: ₹{new_trip['profit']}</Message>
+        </Response>""", 200, {'Content-Type': 'application/xml'}
 
     return jsonify({
         "status": "success", 
