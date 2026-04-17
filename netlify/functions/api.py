@@ -14,6 +14,12 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
+# Add a simple health check route at the root of the function
+@app.route('/api/', methods=['GET'])
+@app.route('/.netlify/functions/api/', methods=['GET'])
+def health_check():
+    return jsonify({"status": "active", "message": "FleetPro API is running"})
+
 # Supabase Configuration
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
